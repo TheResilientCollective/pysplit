@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+import json
 from ftplib import FTP
 from datetime import datetime
 from math import ceil, floor
@@ -15,75 +18,28 @@ https://www.ready.noaa.gov/documents/ppts/Cheat_Sheet_2020.pdf
 """
 
 # arl_datasets only includes datasets that are actively updated
-arl_datasets = {
-    'nams': {
-        'start': datetime(2010, 1, 1),
-        'file_name': "%Y%m%d_hysplit.t00z.namsa",
-        'folder': 'nams/',
-        'time_step': relativedelta(days=+1),
-        'file_size': 1200},
-    'nams-AK': {
-        'start': datetime(2010, 1, 1),
-        'file_name': "%Y%m%d_hysplit.t00z.namsa.AK",
-        'folder': 'nams/',
-        'time_step': relativedelta(days=+1),
-        'file_size': 712},
-    'nams-HI': {
-        'start': datetime(2010, 1, 1),
-        'file_name': "%Y%m%d_hysplit.t00z.namsa.HI",
-        'folder': 'nams/',
-        'time_step': relativedelta(days=+1),
-        'file_size': 481},
-    'gdas': {
-        'start': datetime(2004, 12, 1),
-        'file_name': "gdas1.%x%Y.w%w",
-        'folder': 'gdas/',
-        'time_step': relativedelta(days=+1),
-        'file_size': 571,
-        'x': lambda x: month_name[x.month][0:3]},
-    'gfs0p25': {
-        'start': datetime(2004, 12, 1),
-        'file_name': "%Y%m%d_gfs0p25",
-        'folder': 'gfs0p25/',
-        'time_step': relativedelta(days=+1),
-        'file_size': 2700},
-    'reanalysis': {
-        'start': datetime(1948, 1, 1),
-        'file_name': "RP%Y%m.gbl",
-        'folder': 'reanalysis/',
-        'time_step': relativedelta(months=+1),
-        'file_size': 117},
-    'hrrr': {
-        'start': datetime(2019, 6, 1),
-        'file_name': "%Y%m%d_%x_hrrr",
-        'folder': 'hrrr/',
-        'time_step': relativedelta(hours=+6),
-        'file_size': 3200,
-        'x': lambda x: ['00-05', '06-11', '12-17', '18-23'][floor(x.hour / 6)]},
-    'nam12': {
-        'start': datetime(2007, 5, 1),
-        'file_name': "%Y%m%d_nam12",
-        'folder': 'nam12/',
-        'time_step': relativedelta(days=+1),
-        'file_size': 275},
-    'wrf27km-avg': {
-        'start': datetime(1980, 1, 1),
-        'file_name': 'wrfout_d01_%Y%m%d.ARL',
-        'folder': 'wrf27km/avg/%Y/',
-        'time_step': relativedelta(days=+1),
-        'file_size': 275},
-    'wrf27km-inst': {
-        'start': datetime(1980, 1, 1),
-        'file_name': 'wrfout_d01_%Y%m%d.ARL',
-        'folder': 'wrf27km/inst/%Y/',
-        'time_step': relativedelta(days=+1),
-        'file_size': 210},
-}
+def x_formatter(string):
+        formatters = {"short_month_name": lambda x: month_name[x.month][0:3].lower(),
+                      "hour_bracket": lambda x: ["00-05", "06-11", "12-17", "18-23"][floor(x.hour / 6)],
+                      }
+        return formatters[string]
+
+script_dir = Path(__file__).resolve().parent
+arl_path = script_dir / 'resources' / 'arl_datasets.json'
+with open(arl_path, 'r') as f:
+    arl_datasets = json.load(f)
+for key in arl_datasets.keys():
+    arl_datasets[key]['start'] = datetime.fromisoformat(arl_datasets[key]['start'])
+    arl_datasets[key]['time_step'] = relativedelta(days=arl_datasets[key]['time_step'])
+    try:
+        arl_datasets[key]['x'] = x_formatter(arl_datasets[key]['x'])
+    except KeyError:
+        pass
 
 
 def week_of_month(date):
     """ Returns week of the month from a datetime variable.
-    This is currently only required for the gdas dataset.
+    This is designed for the gdas dataset.
 
     Parameters
     date - datetime variable
@@ -95,11 +51,7 @@ def week_of_month(date):
     datetime(2023, 12, 31) → 6
     datetime(2024, 01, 01) → 1
     """
-    first_day = datetime(date.year, date.month, 1)
-    day_of_week = [x for x in range(1, 7)]
-    day_of_week.append(0)
-    offset = day_of_week[first_day.weekday()]
-    return ceil((date.day + offset) / 7)
+    return ceil(date.day / 7)
 
 
 def parse_format(input_string):
@@ -308,17 +260,25 @@ def download_meteo_data(save_folder, meteo_files, dataset):
         total = str(size) + 'MB'
     if input(f"Requested files will take up {total} of disk space. Do You Want To Continue? [y/n]: ") != "y":
         return
+
+    meteo_folder = arl_datasets[dataset]['folder']
+    output_dir = save_folder + meteo_folder
+    if not os.path.isdir(output_dir):
+        os.mkdir(output_dir)
+
     site = 'ftp.arl.noaa.gov'
     user = 'anonymous'
-    meteo_folder = arl_datasets[dataset]['folder']
     arl_ftp = FTP(host=site, user=user)
     arl_ftp.cwd(f'/archives/{meteo_folder}')
     for meteo_file in meteo_files:
         path = Path(save_folder + meteo_folder + meteo_file)
         if not path.is_file():
             print(f'downloading {meteo_file}')
-            with open(save_folder + meteo_folder + meteo_file, 'wb') as file:
-                arl_ftp.retrbinary(f'RETR {meteo_file}', file.write)
+            with open(output_dir + meteo_file, 'wb') as file:
+                try:
+                    arl_ftp.retrbinary(f'RETR {meteo_file}', file.write)
+                except:
+                    Warning(f'Failed to download {meteo_file}')
 
     arl_ftp.close()
 
