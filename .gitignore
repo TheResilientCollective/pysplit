@@ -2,3 +2,5 @@
 *version.py
 *.egg-info*
 *.coverage
+build/
+dist/

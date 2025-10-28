@@ -2,7 +2,13 @@ from __future__ import division, print_function
 
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.basemap import Basemap
+
+try:
+    from mpl_toolkits.basemap import Basemap
+    HAS_BASEMAP = True
+except ImportError:
+    HAS_BASEMAP = False
+    Basemap = None
 
 from .maplabeller import map_labeller, labelfile_reader
 
@@ -235,6 +241,12 @@ class MapDesign(object):
             via ``basemap.ax`` and ``basemap.ax.get_figure()``, respectively.
 
         """
+        if not HAS_BASEMAP:
+            raise ImportError(
+                "Basemap is required for MapDesign but not installed. "
+                "Please install with: pip install basemap "
+                "Or use CartoDesign instead, which uses cartopy."
+            )
         if ax is None:
             # Create figure instance
             fig, ax = plt.subplots(1, 1, figsize=figsize)
