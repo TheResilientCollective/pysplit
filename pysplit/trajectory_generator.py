@@ -1,7 +1,7 @@
 from __future__ import division
 import os
 import shutil
-from subprocess import call
+from subprocess import run
 import itertools
 import fnmatch
 from calendar import monthrange
@@ -24,7 +24,7 @@ def generate_bulktraj(basename, hysplit_working, output_dir, meteo_dir, years,
     This does not set along-trajectory meteorological output- edit SETUP.CFG
     in the HYSPLIT working directory or in the HYSPLIT4 GUI to reflect
     desired output variables.
-    
+
     Absolute paths strongly recommended over relative paths.
 
     Parameters
@@ -56,7 +56,7 @@ def generate_bulktraj(basename, hysplit_working, output_dir, meteo_dir, years,
         the last 2 or all 4 digits of the years.  Must set to False if have
         multiple decades of meteorology files in meteo_dir.
     outputyr_2digits : Boolean
-        Default False.  Old behavior == True.  The number of digits (2 or 4) to 
+        Default False.  Old behavior == True.  The number of digits (2 or 4) to
         use to identify year in trajectory filename.  Must keep as False if
         wish PySPLIT to correctly identify non-21st century trajectories later
     monthslice : slice object
@@ -91,11 +91,11 @@ def generate_bulktraj(basename, hysplit_working, output_dir, meteo_dir, years,
     # Set year formatting in 3 places
     yr_is2digits = {True : _year2string,
                     False : str}
-    
+
     controlyearfunc = yr_is2digits[True]
     meteoyearfunc = yr_is2digits[meteoyr_2digits]
     fnameyearfunc = yr_is2digits[outputyr_2digits]
-    
+
     if outputyr_2digits is False or meteoyr_2digits is False:
         for year in years:
             if len(str(year)) != 4:
@@ -164,8 +164,8 @@ def generate_bulktraj(basename, hysplit_working, output_dir, meteo_dir, years,
                                   meteofiles, run, controlfname, trajname)
 
                 # Call executable to calculate trajectory
-                call(hysplit)
-
+                return_code = run(hysplit)
+                check_returncode(return_code)
                 # Generate reverse and/or clipped trajectories, if indicated
                 if get_reverse:
                     _reversetraj_whilegen(trajname, run, hysplit, output_rdir,
@@ -253,7 +253,8 @@ def _reversetraj_whilegen(trajname, run, hysplit, output_rdir, meteo_dir,
                       meteofiles, run, controlfname, reversetrajname)
 
     # Call executable
-    call(hysplit)
+    run_return=run(hysplit)
+    check_returncode(run_return)
 
     # Move the trajectory file to the desired output directory
     shutil.move(reversetrajname, final_rtrajpath)
@@ -408,7 +409,7 @@ def _meteofinder(meteo_dir, meteo_bookends, mon, year, mon_dict,
     if num_files == 0:
         raise OSError('0 files found for month/year %(mon)d / %(year)d'
                       %{'mon': mon, 'year': year})
-        
+
     if num_files > 12:
         print(meteofiles)
         raise OSError('%(f)d files found for month/year %(mon)d / %(year)d.'\
