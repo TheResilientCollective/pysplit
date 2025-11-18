@@ -1,6 +1,7 @@
 from __future__ import division
 import os
 import shutil
+import subprocess
 from subprocess import run
 import itertools
 import fnmatch
@@ -161,11 +162,11 @@ def generate_bulktraj(basename, hysplit_working, output_dir, meteo_dir, years,
 
                 # Populate CONTROL file with trajectory initialization data
                 _populate_control(coordinates, controlyr, m, d, h, a, meteo_dir,
-                                  meteofiles, run, controlfname, trajname)
+                                   meteofiles, run, controlfname, trajname)
 
                 # Call executable to calculate trajectory
-                return_code = run([hysplit])
-                check_returncode(return_code)
+                result = subprocess.run([hysplit])
+                result.check_returncode()
                 # Generate reverse and/or clipped trajectories, if indicated
                 if get_reverse:
                     _reversetraj_whilegen(trajname, run, hysplit, output_rdir,
@@ -253,8 +254,8 @@ def _reversetraj_whilegen(trajname, run, hysplit, output_rdir, meteo_dir,
                       meteofiles, run, controlfname, reversetrajname)
 
     # Call executable
-    run_return=run([hysplit])
-    check_returncode(run_return)
+    result = subprocess.run([hysplit])
+    result.check_returncode()
 
     # Move the trajectory file to the desired output directory
     shutil.move(reversetrajname, final_rtrajpath)
