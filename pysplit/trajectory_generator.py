@@ -165,8 +165,10 @@ def generate_bulktraj(basename, hysplit_working, output_dir, meteo_dir, years,
                                    meteofiles, run, controlfname, trajname)
 
                 # Call executable to calculate trajectory
-                result = subprocess.run([hysplit])
-                result.check_returncode()
+                result = subprocess.run([hysplit],  capture_output=True)
+                if result.returncode != 0:
+                    print(result.stderr.decode('utf-8'))
+
                 # Generate reverse and/or clipped trajectories, if indicated
                 if get_reverse:
                     _reversetraj_whilegen(trajname, run, hysplit, output_rdir,
@@ -255,7 +257,8 @@ def _reversetraj_whilegen(trajname, run, hysplit, output_rdir, meteo_dir,
 
     # Call executable
     result = subprocess.run([hysplit])
-    result.check_returncode()
+    if result.returncode != 0:
+        print(result.stderr.decode('utf-8'))
 
     # Move the trajectory file to the desired output directory
     shutil.move(reversetrajname, final_rtrajpath)
