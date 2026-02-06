@@ -151,9 +151,9 @@ def load_hysplitfile(filename):
                     flen /= 2
 
                 # Initialize empty data arrays
-                hydata = np.empty((int(flen), columns - 10))
-                pathdata = np.empty((int(flen), 3))
-                timedata = np.empty((int(flen), 5))
+                hydata = np.empty((int(flen), columns - 10), dtype=float)
+                pathdata = np.empty((int(flen), 3), dtype=float)
+                timedata = np.empty((int(flen), 5), dtype=float)
                 atdata = True
                 arr_ind = 0
 
@@ -273,8 +273,8 @@ def load_clusteringresults(clusterfilename):
 
         with open(tail, 'r') as clusterfile:
             contents = clusterfile.readlines()
-            clusterinfo = np.empty((len(contents)))
-            traj_inds = np.empty((len(contents)))
+            clusterinfo = np.empty((len(contents)), dtype=float)
+            traj_inds = np.empty((len(contents)), dtype=float)
 
             for ind, line in enumerate(contents):
 

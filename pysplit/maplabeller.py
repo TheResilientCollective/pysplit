@@ -253,7 +253,7 @@ def labelfile_generator(labelfile, example='east'):
                        '  fontstyle=normal   weight=normal   fontsize=15\n',
                        '  38.98  -114.30     Great Basin\\nNational Park\n']}
 
-    if example is not 'east' and example is not 'west':
+    if example != 'east' and example != 'west':
         example = 'east'
 
     labels = lbdict['example']

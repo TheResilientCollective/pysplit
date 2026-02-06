@@ -72,27 +72,27 @@ def traj_scatter(data, lons, lats, hymap, zorder=19, colormap='default',
                       'log': np.log10,
                       'ln': np.log}
 
-    if colormap is 'default':
+    if colormap == 'default':
         try:
             colormap = plt.cm.viridis
         except AttributeError:
             colormap = plt.cm.jet
 
 
-    if cnormalize is 'boundary':
+    if cnormalize == 'boundary':
         if vmin is None:
             vmin = data.min()
         if vmax is None:
             vmax = data.max()
         bounds = np.linspace(vmin, vmax, levels)
         norm = clr.BoundaryNorm(bounds, colormap.N)
-    elif cnormalize is 'log':
+    elif cnormalize == 'log':
         norm = clr.LogNorm(vmin=vmin, vmax=vmax)
-    elif cnormalize is 'ln':
+    elif cnormalize == 'ln':
         data = np.log(data)
         if not suppress_printmsg:
             print(msg, '\nnatural log normalization')
-    elif cnormalize is 'sqrt':
+    elif cnormalize == 'sqrt':
         data = np.sqrt(data)
         if not suppress_printmsg:
             print(msg, '\nsqrt normalization')
@@ -260,7 +260,7 @@ def make_cbar(data, ax, orientation='horizontal', cbar_size=(20, 1.0),
 
     # Reverse colorbar
     if reverse_cbar:
-        if orientation is 'horizontal':
+        if orientation == 'horizontal':
             cbar.ax.invert_xaxis()
         else:
             cbar.ax.invert_yaxis()
@@ -313,7 +313,7 @@ def make_cax_cbar(fig, rect, data, orientation='horizontal',
                         extend=extend)
     # Reverse colorbar
     if reverse_cbar:
-        if orientation is 'horizontal':
+        if orientation == 'horizontal':
             cbar.ax.invert_xaxis()
         else:
             cbar.ax.invert_yaxis()

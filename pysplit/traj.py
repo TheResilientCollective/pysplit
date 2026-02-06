@@ -390,11 +390,11 @@ class Trajectory(HyPath):
                     self.uptake.loc[is_below, 'dq'] / self.uptake.loc[w, 'q'])
 
                 is_surface = False
-                if vlim is 'prs':
+                if vlim == 'prs':
                     if self.uptake.loc[w, 'Avg_Pressure'] > pressure_level:
                         is_surface = True
 
-                elif vlim is 'pbl':
+                elif vlim == 'pbl':
                     if (self.uptake.loc[w, 'geometry'].z <
                             self.uptake.loc[w, 'Avg_MixDepth']):
                         is_surface = True
@@ -462,7 +462,7 @@ class Trajectory(HyPath):
             + fname_end
 
         """
-        if clipped_dir is 'default':
+        if clipped_dir == 'default':
             clipped_dir = os.path.join(self.folder, 'clippedtraj')
 
         if not os.path.isdir(clipped_dir):
@@ -494,7 +494,7 @@ class Trajectory(HyPath):
         """
         orig_dir = os.getcwd()
 
-        if clipped_dir is 'default':
+        if clipped_dir == 'default':
             clipped_dir = os.path.join(self.folder, 'clippedtraj')
 
         if not os.path.isdir(clipped_dir):
@@ -532,7 +532,7 @@ class Trajectory(HyPath):
         """
         if reload_rtraj or not hasattr(self, 'path_r'):
 
-            if reverse_dir is 'default':
+            if reverse_dir == 'default':
                 reverse_dir = os.path.join(self.folder, 'reversetraj')
 
             if not os.path.isdir(reverse_dir):
@@ -624,7 +624,7 @@ class Trajectory(HyPath):
         """
         orig_dir = os.getcwd()
 
-        if reverse_dir is 'default':
+        if reverse_dir == 'default':
             reverse_dir = os.path.join(self.folder, 'reversetraj')
 
         if not os.path.isdir(reverse_dir):

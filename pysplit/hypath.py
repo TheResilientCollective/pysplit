@@ -128,7 +128,7 @@ class HyPath(object):
 
         lon, lat = np.radians(getattr(self, which_traj[reverse]).xy)
 
-        dist_ptp = np.empty((lat.size))
+        dist_ptp = np.empty((lat.size), dtype=float)
 
         dist_ptp[0] = 0.0
         dist_ptp[1:] = (np.arccos(np.sin(lat[1:]) * np.sin(lat[:-1]) +
